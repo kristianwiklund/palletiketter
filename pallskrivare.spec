@@ -8,6 +8,7 @@ a = Analysis(
     hiddenimports=[
         'openpyxl',
         'openpyxl.cell._writer',
+        'xlrd',
     ],
     hookspath=[],
     hooksconfig={},
