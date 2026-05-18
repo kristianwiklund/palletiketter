@@ -9,6 +9,7 @@ a = Analysis(
         'openpyxl',
         'openpyxl.cell._writer',
         'xlrd',
+        'msoffcrypto',
     ],
     hookspath=[],
     hooksconfig={},

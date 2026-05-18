@@ -1,13 +1,13 @@
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QPushButton, QLabel, QListWidget, QListWidgetItem,
-    QFileDialog, QStatusBar, QMessageBox, QSizePolicy,
+    QFileDialog, QStatusBar, QMessageBox, QSizePolicy, QInputDialog, QLineEdit,
 )
 from PyQt6.QtCore import Qt, QRectF, QSizeF
 from PyQt6.QtGui import QFont, QPageSize, QTextDocument, QPainter
 from PyQt6.QtPrintSupport import QPrinter, QPrintPreviewDialog, QPrintDialog
 
-from .excel_reader import load_excel, Pallet
+from .excel_reader import load_excel, is_encrypted, Pallet
 from .label_renderer import render_first_page, render_continuation_page
 
 
@@ -87,7 +87,17 @@ class MainWindow(QMainWindow):
         if not path:
             return
         try:
-            self._pallets = load_excel(path)
+            password = None
+            if is_encrypted(path):
+                pwd, ok = QInputDialog.getText(
+                    self, "Lösenordsskyddad fil",
+                    "Filen är krypterad. Ange lösenord:",
+                    QLineEdit.EchoMode.Password,
+                )
+                if not ok:
+                    return
+                password = pwd
+            self._pallets = load_excel(path, password=password)
             self._populate_list()
             filename = path.replace("\\", "/").split("/")[-1]
             self._lbl_file.setText(filename)
