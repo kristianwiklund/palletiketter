@@ -75,19 +75,19 @@ def _wrap(body: str) -> str:
 
 def render_first_page(pallet: Pallet, items: List[Item]) -> str:
     today = date.today().strftime("%Y-%m-%d")
+    # Big black text on white — readable from across a warehouse, no inverse blobs
     banner = (
-        f"<table width='100%' style='margin-bottom: 14px;'>"
-        f"<tr><td style='background-color: #000; color: #fff;"
-        f" padding: 18px 20px 6px 20px;"
-        f" font-size: 36pt; font-weight: bold;"
-        f" font-family: \"Courier New\", Courier, monospace;'>"
+        f"<table width='100%' style='border: 4px solid #000; margin-bottom: 14px;'>"
+        f"<tr><td style='padding: 16px 20px 8px 20px;"
+        f" border-bottom: 2px solid #000;"
+        f" font-size: 80pt; font-weight: bold;"
+        f" font-family: \"Courier New\", Courier, monospace; color: #000;'>"
         f"{_e(pallet.location)}"
         f"</td></tr>"
-        f"<tr><td style='background-color: #000; color: #ccc;"
-        f" padding: 0 20px 14px 20px;"
-        f" font-size: 9pt;"
-        f" font-family: \"Courier New\", Courier, monospace;'>"
-        f"{today}&nbsp;&nbsp;&nbsp;{len(pallet.items)} artiklar"
+        f"<tr><td style='padding: 6px 20px 10px 20px;"
+        f" font-size: 10pt;"
+        f" font-family: \"Courier New\", Courier, monospace; color: #000;'>"
+        f"{today}&nbsp;&nbsp;&nbsp;&nbsp;{len(pallet.items)} artiklar"
         f"</td></tr>"
         f"</table>"
     )
@@ -97,18 +97,16 @@ def render_first_page(pallet: Pallet, items: List[Item]) -> str:
 
 def render_continuation_page(pallet: Pallet, items: List[Item], page_num: int) -> str:
     today = date.today().strftime("%Y-%m-%d")
-    # Slim monospace rule — no background box, just bold text + border line
     cont_header = (
-        f"<table width='100%' style='margin-top: 28px; margin-bottom: 12px;'>"
-        f"<tr>"
-        f"<td style='border-bottom: 2px solid #000; padding-bottom: 5px;"
+        f"<table width='100%' style='margin-top: 28px; margin-bottom: 12px;"
+        f" border-bottom: 3px solid #000;'>"
+        f"<tr><td style='padding: 0 0 6px 0;"
         f" font-family: \"Courier New\", Courier, monospace; color: #000;'>"
-        f"<span style='font-size: 14pt; font-weight: bold;'>{_e(pallet.location)}</span>"
-        f"<span style='font-size: 9pt; color: #555;'>"
+        f"<span style='font-size: 16pt; font-weight: bold;'>{_e(pallet.location)}</span>"
+        f"<span style='font-size: 9pt;'>"
         f"&nbsp;&nbsp;/&nbsp;&nbsp;sida {page_num}&nbsp;&nbsp;/&nbsp;&nbsp;{today}"
         f"</span>"
-        f"</td>"
-        f"</tr>"
+        f"</td></tr>"
         f"</table>"
     )
     body = f"<div class='page'>{cont_header}{_TABLE_HEADER}<tbody>{_rows_html(items)}</tbody></table></div>"
