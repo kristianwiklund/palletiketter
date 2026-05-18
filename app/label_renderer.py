@@ -13,6 +13,7 @@ body {
     font-size: 11pt;
     margin: 0;
     padding: 0;
+    color: #000;
 }
 .page {
     padding: 28px 32px 24px 32px;
@@ -52,6 +53,7 @@ td {
     border: 1px solid #555;
     padding: 5px 8px;
     vertical-align: top;
+    color: #000;
 }
 .col-sku  { width: 16%; }
 .col-name { width: 49%; }
@@ -88,4 +90,4 @@ def render_pallet_html(pallet: Pallet) -> str:
         f"</table>"
         f"</div>"
     )
-    return f"<html><head><style>{_CSS}</style></head><body>{body}</body></html>"
+    return f"<html><head><meta charset='utf-8'><style>{_CSS}</style></head><body>{body}</body></html>"
