@@ -54,6 +54,7 @@ td {
     padding: 5px 8px;
     vertical-align: top;
     color: #000;
+    word-wrap: break-word;
 }
 .col-sku  { width: 16%; }
 .col-name { width: 49%; }
@@ -79,7 +80,7 @@ def render_pallet_html(pallet: Pallet) -> str:
         f"<div class='pallet-id'>Pall: <b>{_e(pallet.location)}</b></div>"
         f"<div class='meta'>Datum: {today}&nbsp;&nbsp;&nbsp;Artiklar: {len(pallet.items)}</div>"
         f"</div>"
-        f"<table width='100%'>"
+        f"<table width='100%' style='table-layout: fixed;'>"
         f"<thead><tr>"
         f"<th width='16%' class='col-sku'>Artikelnr</th>"
         f"<th width='49%' class='col-name'>Benämning</th>"

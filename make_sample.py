@@ -19,6 +19,7 @@ data = [
     ("ART-010", "Pinnbult M12x100", "PALL-C7", 100),
     ("ART-011", "Sexkantsbult M10x60", "PALL-C7", 350),
     ("ART-012", "Sexkantsbult M12x80", "PALL-C7", 175),
+    ("ART-013", "Extremt lång produktbenämning som verkligen inte får plats på en rad utan måste brytas och flöda ned på nästa rad i cellen", "PALL-C7", 42),
 ]
 
 for row in data:
