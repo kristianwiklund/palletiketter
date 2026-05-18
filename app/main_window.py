@@ -8,7 +8,7 @@ from PyQt6.QtGui import QFont, QPageSize, QTextDocument, QPainter
 from PyQt6.QtPrintSupport import QPrinter, QPrintPreviewDialog, QPrintDialog
 
 from .excel_reader import load_excel, Pallet
-from .label_renderer import render_pallet_html
+from .label_renderer import render_first_page, render_continuation_page
 
 
 class MainWindow(QMainWindow):
@@ -132,6 +132,35 @@ class MainWindow(QMainWindow):
         printer.setPageSize(QPageSize(QPageSize.PageSizeId.A4))
         return printer
 
+    def _make_doc(self, html: str, page_w: float, page_h: float) -> QTextDocument:
+        doc = QTextDocument()
+        doc.setPageSize(QSizeF(page_w, page_h))
+        doc.setHtml(html)
+        return doc
+
+    def _rows_fitting(self, html_fn, items, page_w: float, page_h: float) -> int:
+        """Binary search: max items from `items` whose rendered HTML fits in 1 page."""
+        if not items:
+            return 0
+        # Guard: if even 1 item overflows, return 1 to avoid infinite loop
+        if self._make_doc(html_fn(items[:1]), page_w, page_h).pageCount() > 1:
+            return 1
+        lo, hi = 1, len(items)
+        while lo < hi:
+            mid = (lo + hi + 1) // 2
+            if self._make_doc(html_fn(items[:mid]), page_w, page_h).pageCount() <= 1:
+                lo = mid
+            else:
+                hi = mid - 1
+        return lo
+
+    def _paint_page(self, painter: QPainter, doc: QTextDocument,
+                    page_w: float, page_h: float):
+        painter.save()
+        painter.setClipRect(QRectF(0, 0, page_w, page_h))
+        doc.drawContents(painter)
+        painter.restore()
+
     def _paint(self, printer: QPrinter, pallets: list[Pallet]):
         pt_rect = printer.pageRect(QPrinter.Unit.Point)
         px_rect = printer.pageRect(QPrinter.Unit.DevicePixel)
@@ -145,19 +174,27 @@ class MainWindow(QMainWindow):
 
         first = True
         for pallet in pallets:
-            doc = QTextDocument()
-            doc.setPageSize(QSizeF(page_w, page_h))
-            doc.setHtml(render_pallet_html(pallet))
+            remaining = pallet.items
+            page_num = 1
 
-            for page in range(doc.pageCount()):
-                if not first or page > 0:
+            while remaining:
+                if page_num == 1:
+                    html_fn = lambda items, p=pallet: render_first_page(p, items)
+                else:
+                    html_fn = lambda items, p=pallet, n=page_num: render_continuation_page(p, items, n)
+
+                count = self._rows_fitting(html_fn, remaining, page_w, page_h)
+                doc = self._make_doc(html_fn(remaining[:count]), page_w, page_h)
+
+                if not first:
                     printer.newPage()
                 first = False
-                painter.save()
-                painter.setClipRect(QRectF(0, 0, page_w, page_h))
-                painter.translate(0, -page * page_h)
-                doc.drawContents(painter)
-                painter.restore()
+                painter.resetTransform()
+                painter.scale(scale_x, scale_y)
+
+                self._paint_page(painter, doc, page_w, page_h)
+                remaining = remaining[count:]
+                page_num += 1
 
         painter.end()
 

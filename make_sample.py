@@ -20,6 +20,10 @@ data = [
     ("ART-011", "Sexkantsbult M10x60", "PALL-C7", 350),
     ("ART-012", "Sexkantsbult M12x80", "PALL-C7", 175),
     ("ART-013", "Extremt lång produktbenämning som verkligen inte får plats på en rad utan måste brytas och flöda ned på nästa rad i cellen", "PALL-C7", 42),
+] + [
+    (f"ART-{100+i}", f"Testartikel nummer {i} med ganska lång benämning", "PALL-D9", 10 + i)
+    for i in range(1, 36)  # 35 items — forces at least 2 pages
+
 ]
 
 for row in data:

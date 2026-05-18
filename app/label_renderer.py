@@ -1,6 +1,6 @@
 from datetime import date
 from typing import List
-from .excel_reader import Pallet
+from .excel_reader import Pallet, Item
 
 
 def _e(s: str) -> str:
@@ -16,23 +16,7 @@ body {
     color: #000;
 }
 .page {
-    padding: 28px 32px 24px 32px;
-}
-.header {
-    border-bottom: 3px solid #000;
-    margin-bottom: 14px;
-    padding-bottom: 10px;
-}
-.pallet-id {
-    font-size: 26pt;
-    font-weight: bold;
-    font-family: "Courier New", Courier, monospace;
-}
-.meta {
-    font-size: 9pt;
-    color: #333;
-    margin-top: 4px;
-    font-family: "Courier New", Courier, monospace;
+    padding: 0 32px 24px 32px;
 }
 table {
     width: 100%;
@@ -62,33 +46,70 @@ td {
 .col-act  { width: 23%; }
 """
 
+_TABLE_HEADER = (
+    "<table width='100%' style='table-layout: fixed;'>"
+    "<thead><tr>"
+    "<th width='16%' class='col-sku'>Artikelnr</th>"
+    "<th width='49%' class='col-name'>Benämning</th>"
+    "<th width='12%' class='col-last'>Sen. inv.</th>"
+    "<th width='23%' class='col-act'>Faktiskt antal / OK</th>"
+    "</tr></thead>"
+)
 
-def render_pallet_html(pallet: Pallet) -> str:
-    today = date.today().strftime("%Y-%m-%d")
-    rows = "".join(
+
+def _rows_html(items: List[Item]) -> str:
+    return "".join(
         f"<tr>"
         f"<td class='col-sku'>{_e(item.sku)}</td>"
         f"<td class='col-name'>{_e(item.name)}</td>"
         f"<td class='col-last'>{_e(item.last_count)}</td>"
         f"<td class='col-act'></td>"
         f"</tr>"
-        for item in pallet.items
+        for item in items
     )
-    body = (
-        f"<div class='page'>"
-        f"<div class='header'>"
-        f"<div class='pallet-id'>Pall: <b>{_e(pallet.location)}</b></div>"
-        f"<div class='meta'>Datum: {today}&nbsp;&nbsp;&nbsp;Artiklar: {len(pallet.items)}</div>"
-        f"</div>"
-        f"<table width='100%' style='table-layout: fixed;'>"
-        f"<thead><tr>"
-        f"<th width='16%' class='col-sku'>Artikelnr</th>"
-        f"<th width='49%' class='col-name'>Benämning</th>"
-        f"<th width='12%' class='col-last'>Sen. inv.</th>"
-        f"<th width='23%' class='col-act'>Faktiskt antal / OK</th>"
-        f"</tr></thead>"
-        f"<tbody>{rows}</tbody>"
-        f"</table>"
-        f"</div>"
-    )
+
+
+def _wrap(body: str) -> str:
     return f"<html><head><meta charset='utf-8'><style>{_CSS}</style></head><body>{body}</body></html>"
+
+
+def render_first_page(pallet: Pallet, items: List[Item]) -> str:
+    today = date.today().strftime("%Y-%m-%d")
+    banner = (
+        f"<table width='100%' style='margin-bottom: 14px;'>"
+        f"<tr><td style='background-color: #000; color: #fff;"
+        f" padding: 18px 20px 6px 20px;"
+        f" font-size: 36pt; font-weight: bold;"
+        f" font-family: \"Courier New\", Courier, monospace;'>"
+        f"{_e(pallet.location)}"
+        f"</td></tr>"
+        f"<tr><td style='background-color: #000; color: #ccc;"
+        f" padding: 0 20px 14px 20px;"
+        f" font-size: 9pt;"
+        f" font-family: \"Courier New\", Courier, monospace;'>"
+        f"{today}&nbsp;&nbsp;&nbsp;{len(pallet.items)} artiklar"
+        f"</td></tr>"
+        f"</table>"
+    )
+    body = f"<div class='page'>{banner}{_TABLE_HEADER}<tbody>{_rows_html(items)}</tbody></table></div>"
+    return _wrap(body)
+
+
+def render_continuation_page(pallet: Pallet, items: List[Item], page_num: int) -> str:
+    today = date.today().strftime("%Y-%m-%d")
+    # Slim monospace rule — no background box, just bold text + border line
+    cont_header = (
+        f"<table width='100%' style='margin-top: 28px; margin-bottom: 12px;'>"
+        f"<tr>"
+        f"<td style='border-bottom: 2px solid #000; padding-bottom: 5px;"
+        f" font-family: \"Courier New\", Courier, monospace; color: #000;'>"
+        f"<span style='font-size: 14pt; font-weight: bold;'>{_e(pallet.location)}</span>"
+        f"<span style='font-size: 9pt; color: #555;'>"
+        f"&nbsp;&nbsp;/&nbsp;&nbsp;sida {page_num}&nbsp;&nbsp;/&nbsp;&nbsp;{today}"
+        f"</span>"
+        f"</td>"
+        f"</tr>"
+        f"</table>"
+    )
+    body = f"<div class='page'>{cont_header}{_TABLE_HEADER}<tbody>{_rows_html(items)}</tbody></table></div>"
+    return _wrap(body)
